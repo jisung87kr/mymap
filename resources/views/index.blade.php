@@ -2,7 +2,12 @@
 
 @section('content')
 <h1>{{$city}} 공중화장실 정보</h1>
-<div id="map" class="mb-3" style="width:100%; height:400px;"></div>
+<div class="map_wrap">
+    <div class="btnbox">
+        <a href="#" class="btn btn-sm btn-secondary mb-2 mx-1" data-field="전체">전체</a>
+    </div>
+    <div id="map" class="mb-3" style="width:100%; height:400px;"></div>
+</div>
 <form class="row g-3 mb-3" action="" onsubmit="searchCity(event)">
     <div class="col-auto">
         <input type="text" class="form-control" placeholder="춘천" name="city" id="city" value="춘천">
@@ -12,7 +17,6 @@
     </div>
 </form>
 <div class="table-responsive">
-
     <table class="table table-bordered display responsive nowrap" style="width:100%">
         <colgroup>
             <col width="15%">
@@ -55,6 +59,31 @@
         minLevel: 5 // 클러스터 할 최소 지도 레벨
     });
 
+    var useFields = [
+        ['남성용-장애인용대변기수', '장애인대변기(남성)'],
+        ['여성용-장애인용대변기수', '장애인대변기(여성)'],
+    ];
+
+    var category = {};
+
+    for(var i=0; i<useFields.length; i++){
+        var item = useFields[i];
+        var btn = '<a href="#" class="btn btn-sm btn-secondary mb-2 mx-1" data-field="'+item[0]+'">'+item[1]+'</a>';
+        $(".btnbox").append(btn);
+        category[item[0]] = [];
+    }
+
+    // 일반 지도와 스카이뷰로 지도 타입을 전환할 수 있는 지도타입 컨트롤을 생성합니다
+    var mapTypeControl = new kakao.maps.MapTypeControl();
+
+    // 지도에 컨트롤을 추가해야 지도위에 표시됩니다
+    // kakao.maps.ControlPosition은 컨트롤이 표시될 위치를 정의하는데 TOPRIGHT는 오른쪽 위를 의미합니다
+    map.addControl(mapTypeControl, kakao.maps.ControlPosition.TOPRIGHT);
+
+    // 지도 확대 축소를 제어할 수 있는  줌 컨트롤을 생성합니다
+    var zoomControl = new kakao.maps.ZoomControl();
+    map.addControl(zoomControl, kakao.maps.ControlPosition.RIGHT);
+
     //사용자 위치로 이동
     getCurrentXY().then(function(coords){
         var currentPosition = new kakao.maps.LatLng(coords.latitude, coords.longitude);
@@ -96,23 +125,10 @@
         });
     }
 
-    // 인포윈도우를 표시하는 클로저를 만드는 함수입니다
-    function makeOverListener(map, marker, infowindow) {
-        return function() {
-            infowindow.open(map, marker);
-        };
-    }
-
-    // 인포윈도우를 닫는 클로저를 만드는 함수입니다
-    function makeOutListener(infowindow) {
-        return function() {
-            infowindow.close();
-        };
-    }
-
     function createMap(data){
         // 마커초기화
-        setMarkers(null);
+        markers = [];
+        setMarkers(markers, null);
         clusterer.removeMarkers( markers );
 
         // 마커 하나를 지도위에 표시합니다
@@ -134,50 +150,74 @@
                 }
             })(j);
         }
+        console.log(markers);
+    }
 
-        // 마커를 생성하고 지도위에 표시하는 함수입니다
-        function addMarker(position, item) {
-            // 마커를 생성합니다
-            var marker = new kakao.maps.Marker({
-                position: position
-            });
+    // 마커를 생성하고 지도위에 표시하는 함수입니다
+    function addMarker(position, item) {
+        // 마커를 생성합니다
+        var marker = new kakao.maps.Marker({
+            position: position
+        });
 
-            marker.itemID = item['id'];
+        marker.itemID = item['id'];
 
-            // 마커가 지도 위에 표시되도록 설정합니다
-            marker.setMap(map);
+        // 마커가 지도 위에 표시되도록 설정합니다
+        marker.setMap(map);
 
-            // 생성된 마커를 배열에 추가합니다
-            markers.push(marker);
+        // 생성된 마커를 배열에 추가합니다
+        markers.push(marker);
 
-            // 클러스터 추가
-            clusterer.addMarker(marker);
+        // 클러스터 추가
+        clusterer.addMarker(marker);
 
-            // 마커에 표시할 인포윈도우를 생성합니다
-            var el = getContent(item);
-            var infowindow = new kakao.maps.InfoWindow({
-                content: el, // 인포윈도우에 표시할 내용
-                removable: true,
-                zIndex: 100
-            });
+        // 마커에 표시할 인포윈도우를 생성합니다
+        var el = getContent(item);
+        var infowindow = new kakao.maps.InfoWindow({
+            content: el, // 인포윈도우에 표시할 내용
+            removable: true,
+            zIndex: 100
+        });
 
-            infoWindows.push(infowindow);
+        infoWindows.push(infowindow);
 
-            kakao.maps.event.addListener(marker, 'click', makeOverListener(map, marker, infowindow));
-            kakao.maps.event.addListener(marker, 'openWindow', function(data){
-                for (var i = 0; i < infoWindows.length; i++){
-                    infoWindows[i].close();
-                }
-                infowindow.open(map, marker);
-            });
-        }
+        kakao.maps.event.addListener(marker, 'click', makeOverListener(map, marker, infowindow));
+        kakao.maps.event.addListener(marker, 'openWindow', function(data){
+            for (var i = 0; i < infoWindows.length; i++){
+                infoWindows[i].close();
+            }
+            infowindow.open(map, marker);
+        });
 
-        // 배열에 추가된 마커들을 지도에 표시하거나 삭제하는 함수입니다
-        function setMarkers(map) {
-            for (var i = 0; i < markers.length; i++) {
-                markers[i].setMap(map);
+        for(var j=0; j<useFields.length; j++){
+            var fieldName = useFields[j][0];
+            if(item[fieldName] != '0'){
+                category[fieldName].push(marker);
             }
         }
+    }
+
+    // 인포윈도우를 표시하는 클로저를 만드는 함수입니다
+    function makeOverListener(map, marker, infowindow) {
+        return function() {
+            infowindow.open(map, marker);
+        };
+    }
+
+    // 인포윈도우를 닫는 클로저를 만드는 함수입니다
+    function makeOutListener(infowindow) {
+        return function() {
+            infowindow.close();
+        };
+    }
+
+    // 배열에 추가된 마커들을 지도에 표시하거나 삭제하는 함수입니다
+    function setMarkers(markers, map) {
+        for (var i = 0; i < markers.length; i++) {
+            markers[i].setMap(map);
+        }
+        clusterer.clear();
+        clusterer.addMarkers(markers);
     }
 
     function searchCity(event){
@@ -261,5 +301,18 @@
         var marker = findMarker(markers, data['id']);
         kakao.maps.event.trigger(marker, 'openWindow');
     } );
+
+    $(".btnbox").on("click", 'a', function(event){
+       event.preventDefault();
+       var field = $(this).data('field');
+       var selected_markers = [];
+       if(field === '전체'){
+           selected_markers = markers;
+       } else {
+           selected_markers = category[field];
+       }
+       setMarkers(selected_markers, null);
+       console.log(selected_markers);
+    });
 </script>
 @endsection
