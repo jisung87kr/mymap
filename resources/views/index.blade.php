@@ -5,43 +5,40 @@
 <div id="map" class="mb-3" style="width:100%; height:400px;"></div>
 <form class="row g-3 mb-3" action="" onsubmit="searchCity(event)">
     <div class="col-auto">
-        <input type="text" class="form-control" placeholder="춘천" name="city" id="city">
+        <input type="text" class="form-control" placeholder="춘천" name="city" id="city" value="춘천">
     </div>
     <div class="col-auto">
         <input type="submit" class="btn btn-primary">
     </div>
 </form>
-<table class="table table-bordered">
-    <colgroup>
-        <col width="15%">
-        <col width="15%">
-        <col width="*">
-        <col width="10%">
-        <col width="15%">
-    </colgroup>
-    <thead>
-    <tr>
-        <th>구분</th>
-        <th>화장실명</th>
-        <th>주소</th>
-        <th>남녀공용</th>
-        <th>개방시간</th>
-    </tr>
-    </thead>
-    <tbody>
-        @foreach ($toilets as $toilet)
+<div class="table-responsive">
+
+    <table class="table table-bordered display responsive nowrap" style="width:100%">
+        <colgroup>
+            <col width="15%">
+            <col width="15%">
+            <col width="*">
+            <col width="10%">
+            <col width="15%">
+            <col width="10%">
+        </colgroup>
+        <thead>
         <tr>
-            <td>{{$toilet->구분}}</td>
-            <td>{{$toilet->화장실명}}</td>
-            <td>{{$toilet->주소}}</td>
-            <td>{{$toilet->남녀공용화장실여부}}</td>
-            <td>{{$toilet->개방시간}}</td>
+            <th>구분</th>
+            <th>화장실명</th>
+            <th>주소</th>
+            <th>남녀공용</th>
+            <th>개방시간</th>
+            <th>조회</th>
         </tr>
-        @endforeach
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+</div>
 <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=6f68d469e8f45654425303a50b45a3e7&libraries=services,clusterer,drawing"></script>
 <script defer>
+    var dt;
     var mapContainer = document.getElementById('map'), // 지도를 표시할 div
         mapOption = {
             center: new kakao.maps.LatLng(37.87446532, 127.7038534334), // 지도의 중심좌표
@@ -50,6 +47,7 @@
 
     var map = new kakao.maps.Map(mapContainer, mapOption); // 지도를 생성합니다
     var markers = [];
+    var infoWindows = [];
     var geocoder = new kakao.maps.services.Geocoder();
     var clusterer = new kakao.maps.MarkerClusterer({
         map: map, // 마커들을 클러스터로 관리하고 표시할 지도 객체
@@ -144,6 +142,8 @@
                 position: position
             });
 
+            marker.itemID = item['id'];
+
             // 마커가 지도 위에 표시되도록 설정합니다
             marker.setMap(map);
 
@@ -157,10 +157,19 @@
             var el = getContent(item);
             var infowindow = new kakao.maps.InfoWindow({
                 content: el, // 인포윈도우에 표시할 내용
-                removable: true
+                removable: true,
+                zIndex: 100
             });
 
+            infoWindows.push(infowindow);
+
             kakao.maps.event.addListener(marker, 'click', makeOverListener(map, marker, infowindow));
+            kakao.maps.event.addListener(marker, 'openWindow', function(data){
+                for (var i = 0; i < infoWindows.length; i++){
+                    infoWindows[i].close();
+                }
+                infowindow.open(map, marker);
+            });
         }
 
         // 배열에 추가된 마커들을 지도에 표시하거나 삭제하는 함수입니다
@@ -176,9 +185,9 @@
         var city = document.getElementById('city').value;
         axios.get('//mymap.test/api/v1/'+city).then(function (response) {
             createMap(response.data.response);
-            var dt = $('table').DataTable();
+            dt = $('table').DataTable();
             dt.destroy();
-            $('table').DataTable({
+            dt = $('table').DataTable({
                 data: response.data.response,
                 columns: [
                     { data: '구분' },
@@ -186,6 +195,7 @@
                     { data: '주소' },
                     { data: '남녀공용화장실여부' },
                     { data: '개방시간' },
+                    { defaultContent: "<button class='btn btn-outline-secondary btn-sm'>위치</button>" }
                 ]
             });
         });
@@ -233,6 +243,23 @@
         return element;
     }
 
+    function findMarker(markers, id){
+        var marker = '';
+        for (var i = 0; i < markers.length; i++) {
+            var item = markers[i];
+            if(item['itemID'] === id){
+                marker = item;
+            }
+        }
+        return marker;
+    }
 
+    $('.table tbody').on( 'click', 'button', function () {
+        var data = dt.row( $(this).parents('tr') ).data();
+        var currentPosition = new kakao.maps.LatLng(data['위도'], data['경도']);
+        map.setCenter(currentPosition);
+        var marker = findMarker(markers, data['id']);
+        kakao.maps.event.trigger(marker, 'openWindow');
+    } );
 </script>
 @endsection

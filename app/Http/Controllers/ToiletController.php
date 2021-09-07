@@ -66,19 +66,19 @@ class ToiletController extends Controller
 
         if(!Schema::hasColumn('toilets', '주소')){
             Schema::table('toilets', function (Blueprint $table) {
-                $table->text('주소')->default('');
+                $table->text('주소');
             });
         }
 
         if(!Schema::hasColumn('toilets', '도')){
             Schema::table('toilets', function (Blueprint $table) {
-                $table->string('도', 100)->default('');
+                $table->string('도', 100);
             });
         }
 
         if(!Schema::hasColumn('toilets', '시')){
             Schema::table('toilets', function (Blueprint $table) {
-                $table->string('시', 100)->default('');
+                $table->string('시', 100);
             });
         }
 

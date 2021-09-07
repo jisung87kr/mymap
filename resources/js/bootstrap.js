@@ -18,6 +18,8 @@ window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 window.$  = require( 'jquery' );
 require( 'datatables.net-bs5' )();
 require( 'datatables.net-autofill-bs5' )();
+require( 'datatables.net-responsive' )();
+require( 'datatables.net-responsive-bs5' )();
 
 // import Echo from 'laravel-echo';
 
