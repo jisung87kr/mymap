@@ -45,3 +45,15 @@
     background: #fff;
     z-index: 100;
 }
+
+.dataTables_length{
+    text-align: left !important;
+    margin-bottom: 10px;
+}
+.dataTables_filter{
+    text-align: right !important;
+}
+
+.dataTables_info{
+    display: none;
+}

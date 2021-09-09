@@ -15,6 +15,12 @@
 <body>
     <div class="container">
         @yield('content')
+        <footer>
+            <hr>
+            <div class="text-center py-3 mb-3">
+                <a href="mailto:ujsstudio87@gmail.com">ujsstudio87@gmail.com</a>
+            </div>
+        </footer>
     </div>
 </body>
 </html>

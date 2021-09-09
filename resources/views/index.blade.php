@@ -1,7 +1,7 @@
 @extends('layouts.main')
 
 @section('content')
-<h1>{{$data['search']}} {{$data['pageTitle']}}</h1>
+<h1 class="mt-5">{{$data['search']}} {{$data['pageTitle']}}</h1>
 <div class="btnbox">
     <a href="#" class="btn btn-sm btn-secondary mb-2" data-field="전체">전체</a>
 </div>
@@ -256,7 +256,10 @@
         dt.destroy();
         dt = $('.info-table').DataTable({
             data: data,
-            columns: dataTableFields
+            columns: dataTableFields,
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.11.1/i18n/ko.json'
+            }
         });
     }
 
