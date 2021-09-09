@@ -25,10 +25,17 @@ class ToiletController extends Controller
         }
 
         $data = [
+            'modelName' => class_basename($this->toilet),
             'search' => $city,
+            'pageTitle' => '공중화장실 정보',
             'result' => $toilets
         ];
         return $this->responseIndex($data);
+    }
+
+    public function responseIndex($data)
+    {
+        return view('index', compact('data'));
     }
 
     public function update(Toilet $id, Request $request)
@@ -46,13 +53,6 @@ class ToiletController extends Controller
             201,
             [],
             JSON_PRETTY_PRINT);
-    }
-
-    public function responseIndex($data)
-    {
-        $toilets = $data['result'];
-        $city = $data['search'];
-        return view('index', compact('toilets', 'city'));
     }
 
     public function setting()

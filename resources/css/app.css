@@ -32,3 +32,16 @@
     font-size: 13px;
     vertical-align: middle;
 }
+
+.map_wrap{
+    position: relative;
+}
+
+.btn-current-position{
+    position: absolute;
+    right: 3px;
+    bottom: 3px;
+    border: 1px solid #ccc;
+    background: #fff;
+    z-index: 100;
+}

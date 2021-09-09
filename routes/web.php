@@ -17,6 +17,6 @@ use App\Http\Controllers\ToiletController;
 //    return view('welcome');
 //});
 
-Route::get('/setting', [ToiletController::class, 'setting']);
-Route::get('/{city?}', [ToiletController::class, 'index']);
-Route::put('/{id}', [ToiletController::class, 'update']);
+Route::get('/toilet/setting', [ToiletController::class, 'setting']);
+Route::get('/toilet/{city?}', [ToiletController::class, 'index']);
+Route::put('/toilet/{id}', [ToiletController::class, 'update']);

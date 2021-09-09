@@ -20,7 +20,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::name('api.')->group(function(){
     Route::prefix('v1')->group(function(){
-        Route::get('/{city?}', [ToiletApiController::class, 'index']);
-        Route::put('/{id}', [ToiletApiController::class, 'update']);
+        Route::get('/toilet/{city?}', [ToiletApiController::class, 'index']);
+        Route::put('/toilet/{id}', [ToiletApiController::class, 'update']);
     });
 });

@@ -1,12 +1,13 @@
 @extends('layouts.main')
 
 @section('content')
-<h1>{{$city}} 공중화장실 정보</h1>
+<h1>{{$data['search']}} {{$data['pageTitle']}}</h1>
+<div class="btnbox">
+    <a href="#" class="btn btn-sm btn-secondary mb-2" data-field="전체">전체</a>
+</div>
 <div class="map_wrap">
-    <div class="btnbox">
-        <a href="#" class="btn btn-sm btn-secondary mb-2 mx-1" data-field="전체">전체</a>
-    </div>
     <div id="map" class="mb-3" style="width:100%; height:400px;"></div>
+    <button class="btn-current-position"><i class="fa fa-location-arrow" aria-hidden="true"></i></button>
 </div>
 <form class="row g-3 mb-3" action="" onsubmit="searchCity(event)">
     <div class="col-auto">
@@ -17,7 +18,7 @@
     </div>
 </form>
 <div class="table-responsive">
-    <table class="table table-bordered display responsive nowrap" style="width:100%">
+    <table class="info-table table table-bordered display responsive nowrap" style="width:100%">
         <colgroup>
             <col width="15%">
             <col width="15%">
@@ -42,6 +43,22 @@
 </div>
 <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=6f68d469e8f45654425303a50b45a3e7&libraries=services,clusterer,drawing"></script>
 <script defer>
+    var endpoint = '//mymap.test/api/v1/';
+    var mapType = 'toilet/';
+    var requestUrl = endpoint+mapType;
+    var useFields = [
+        ['남성용-장애인용대변기수', '장애인대변기(남성)'],
+        ['여성용-장애인용대변기수', '장애인대변기(여성)'],
+    ];
+    var dataTableFields = [
+        { data: '구분' },
+        { data: '화장실명' },
+        { data: '주소' },
+        { data: '남녀공용화장실여부' },
+        { data: '개방시간' },
+        { defaultContent: "<button class='btn btn-outline-secondary btn-sm'>위치</button>" }
+    ];
+
     var dt;
     var mapContainer = document.getElementById('map'), // 지도를 표시할 div
         mapOption = {
@@ -58,58 +75,51 @@
         averageCenter: true, // 클러스터에 포함된 마커들의 평균 위치를 클러스터 마커 위치로 설정
         minLevel: 5 // 클러스터 할 최소 지도 레벨
     });
-
-    var useFields = [
-        ['남성용-장애인용대변기수', '장애인대변기(남성)'],
-        ['여성용-장애인용대변기수', '장애인대변기(여성)'],
-    ];
-
-    var category = {};
-
-    for(var i=0; i<useFields.length; i++){
-        var item = useFields[i];
-        var btn = '<a href="#" class="btn btn-sm btn-secondary mb-2 mx-1" data-field="'+item[0]+'">'+item[1]+'</a>';
-        $(".btnbox").append(btn);
-        category[item[0]] = [];
-    }
-
     // 일반 지도와 스카이뷰로 지도 타입을 전환할 수 있는 지도타입 컨트롤을 생성합니다
     var mapTypeControl = new kakao.maps.MapTypeControl();
-
-    // 지도에 컨트롤을 추가해야 지도위에 표시됩니다
-    // kakao.maps.ControlPosition은 컨트롤이 표시될 위치를 정의하는데 TOPRIGHT는 오른쪽 위를 의미합니다
-    map.addControl(mapTypeControl, kakao.maps.ControlPosition.TOPRIGHT);
-
     // 지도 확대 축소를 제어할 수 있는  줌 컨트롤을 생성합니다
     var zoomControl = new kakao.maps.ZoomControl();
+    var category = {};
+
+    map.addControl(mapTypeControl, kakao.maps.ControlPosition.TOPRIGHT);
     map.addControl(zoomControl, kakao.maps.ControlPosition.RIGHT);
 
-    //사용자 위치로 이동
-    getCurrentXY().then(function(coords){
-        var currentPosition = new kakao.maps.LatLng(coords.latitude, coords.longitude);
-        map.setCenter(currentPosition);
+    function makeFilterButtons(useFields){
+        for(var i=0; i<useFields.length; i++){
+            var item = useFields[i];
+            var btn = '<a href="#" class="btn btn-sm btn-secondary mb-2 mx-1" data-field="'+item[0]+'">'+item[1]+'</a>';
+            $(".btnbox").append(btn);
+            category[item[0]] = [];
+        }
+    }
 
-        // 커스텀 오버레이에 표시할 내용입니다
-        // HTML 문자열 또는 Dom Element 입니다
-        var content = '<div class="position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle"></div>';
+    function moveCurrentPosition(){
+        //사용자 위치로 이동
+        getCurrentXY().then(function(coords){
+            var currentPosition = new kakao.maps.LatLng(coords.latitude, coords.longitude);
+            map.setCenter(currentPosition);
 
-        // 커스텀 오버레이가 표시될 위치입니다
-        var position = new kakao.maps.LatLng(coords.latitude, coords.longitude);
+            // 커스텀 오버레이에 표시할 내용입니다
+            // HTML 문자열 또는 Dom Element 입니다
+            var content = '<div class="position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle"></div>';
 
-        // 커스텀 오버레이를 생성합니다
-        var customOverlay = new kakao.maps.CustomOverlay({
-            position: position,
-            content: content
+            // 커스텀 오버레이가 표시될 위치입니다
+            var position = new kakao.maps.LatLng(coords.latitude, coords.longitude);
+
+            // 커스텀 오버레이를 생성합니다
+            var customOverlay = new kakao.maps.CustomOverlay({
+                position: position,
+                content: content
+            });
+
+            // 커스텀 오버레이를 지도에 표시합니다
+            customOverlay.setMap(map);
         });
-
-        // 커스텀 오버레이를 지도에 표시합니다
-        customOverlay.setMap(map);
-    });
+    }
 
     function getCurrentXY(){
         return new Promise(function(resolve, reject) {
             navigator.geolocation.getCurrentPosition((position) => {
-                // resolve(position.coords.latitude, position.coords.longitude);
                 resolve(position.coords);
             });
         });
@@ -138,7 +148,7 @@
                 if(item['위도'] === null || item['경도'] === null){
                     getAddressData(item['주소']).then(function(response){
                         addMarker(new kakao.maps.LatLng(response.y, response.x), item);
-                        axios.put('//mymap.test/api/v1/'+item['id'], {
+                        axios.put(requestUrl+item['id'], {
                             '위도': response.y,
                             '경도': response.x
                         }).then(function(response) {
@@ -150,7 +160,6 @@
                 }
             })(j);
         }
-        console.log(markers);
     }
 
     // 마커를 생성하고 지도위에 표시하는 함수입니다
@@ -183,9 +192,7 @@
 
         kakao.maps.event.addListener(marker, 'click', makeOverListener(map, marker, infowindow));
         kakao.maps.event.addListener(marker, 'openWindow', function(data){
-            for (var i = 0; i < infoWindows.length; i++){
-                infoWindows[i].close();
-            }
+            closeInfoWindows(infoWindows);
             infowindow.open(map, marker);
         });
 
@@ -200,6 +207,7 @@
     // 인포윈도우를 표시하는 클로저를 만드는 함수입니다
     function makeOverListener(map, marker, infowindow) {
         return function() {
+            closeInfoWindows(infoWindows);
             infowindow.open(map, marker);
         };
     }
@@ -213,6 +221,7 @@
 
     // 배열에 추가된 마커들을 지도에 표시하거나 삭제하는 함수입니다
     function setMarkers(markers, map) {
+        closeInfoWindows(infoWindows);
         for (var i = 0; i < markers.length; i++) {
             markers[i].setMap(map);
         }
@@ -220,25 +229,41 @@
         clusterer.addMarkers(markers);
     }
 
+    function closeInfoWindows(infoWindows){
+        for (var i = 0; i < infoWindows.length; i++){
+            infoWindows[i].close();
+        }
+    }
+
     function searchCity(event){
         event.preventDefault();
         var city = document.getElementById('city').value;
-        axios.get('//mymap.test/api/v1/'+city).then(function (response) {
+        geocoder.addressSearch(city, function(result, status) {
+            var currentPosition = new kakao.maps.LatLng(result[0].y, result[0].x);
+            map.setCenter(currentPosition);
+            map.setLevel(mapOption.level);
+        });
+
+        axios.get(requestUrl+city).then(function (response) {
             createMap(response.data.response);
-            dt = $('table').DataTable();
+            dt = $('.info-table').DataTable();
             dt.destroy();
-            dt = $('table').DataTable({
+            dt = $('.info-table').DataTable({
                 data: response.data.response,
-                columns: [
-                    { data: '구분' },
-                    { data: '화장실명' },
-                    { data: '주소' },
-                    { data: '남녀공용화장실여부' },
-                    { data: '개방시간' },
-                    { defaultContent: "<button class='btn btn-outline-secondary btn-sm'>위치</button>" }
-                ]
+                columns: dataTableFields
             });
         });
+    }
+
+    function findMarker(markers, id){
+        var marker = '';
+        for (var i = 0; i < markers.length; i++) {
+            var item = markers[i];
+            if(item['itemID'] === id){
+                marker = item;
+            }
+        }
+        return marker;
     }
 
     function getContent(item){
@@ -283,23 +308,13 @@
         return element;
     }
 
-    function findMarker(markers, id){
-        var marker = '';
-        for (var i = 0; i < markers.length; i++) {
-            var item = markers[i];
-            if(item['itemID'] === id){
-                marker = item;
-            }
-        }
-        return marker;
-    }
-
     $('.table tbody').on( 'click', 'button', function () {
         var data = dt.row( $(this).parents('tr') ).data();
         var currentPosition = new kakao.maps.LatLng(data['위도'], data['경도']);
         map.setCenter(currentPosition);
         var marker = findMarker(markers, data['id']);
         kakao.maps.event.trigger(marker, 'openWindow');
+        map.setLevel(mapOption.level);
     } );
 
     $(".btnbox").on("click", 'a', function(event){
@@ -312,7 +327,9 @@
            selected_markers = category[field];
        }
        setMarkers(selected_markers, null);
-       console.log(selected_markers);
     });
+
+    $(".btn-current-position").click(moveCurrentPosition);
+    makeFilterButtons(useFields);
 </script>
 @endsection
