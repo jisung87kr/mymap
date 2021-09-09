@@ -170,6 +170,7 @@
         });
 
         marker.itemID = item['id'];
+        marker.item = item;
 
         // 마커가 지도 위에 표시되도록 설정합니다
         marker.setMap(map);
@@ -246,12 +247,16 @@
 
         axios.get(requestUrl+city).then(function (response) {
             createMap(response.data.response);
-            dt = $('.info-table').DataTable();
-            dt.destroy();
-            dt = $('.info-table').DataTable({
-                data: response.data.response,
-                columns: dataTableFields
-            });
+            initDataTable(response.data.response);
+        });
+    }
+
+    function initDataTable(data){
+        dt = $('.info-table').DataTable();
+        dt.destroy();
+        dt = $('.info-table').DataTable({
+            data: data,
+            columns: dataTableFields
         });
     }
 
@@ -264,6 +269,15 @@
             }
         }
         return marker;
+    }
+
+    function getSelectedItems(markers){
+        var arr = [];
+        for (var i = 0; i < markers.length; i++) {
+            var item = markers[i].item;
+            arr.push(item);
+        }
+        return arr;
     }
 
     function getContent(item){
@@ -327,6 +341,7 @@
            selected_markers = category[field];
        }
        setMarkers(selected_markers, null);
+       initDataTable(getSelectedItems(selected_markers));
     });
 
     $(".btn-current-position").click(moveCurrentPosition);
