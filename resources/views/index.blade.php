@@ -43,7 +43,8 @@
 </div>
 <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=6f68d469e8f45654425303a50b45a3e7&libraries=services,clusterer,drawing"></script>
 <script defer>
-    var endpoint = '//mymap.test/api/v1/';
+    var base_url = '{{url('/')}}';
+    var endpoint = base_url+'/api/v1/';
     var mapType = 'toilet/';
     var requestUrl = endpoint+mapType;
     var useFields = [
