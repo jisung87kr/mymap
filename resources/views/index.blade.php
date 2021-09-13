@@ -2,7 +2,7 @@
 
 @section('content')
 <h1 class="mt-5">{{$data['search']}} {{$data['pageTitle']}}</h1>
-<div class="btnbox">
+<div class="btnbox" style="display: none">
     <a href="#" class="btn btn-sm btn-secondary mb-2" data-field="전체">전체</a>
 </div>
 <div class="map_wrap">
@@ -148,7 +148,7 @@
         markers = [];
         setMarkers(markers, null);
         clusterer.removeMarkers( markers );
-
+        $(".btnbox").show();
         // 마커 하나를 지도위에 표시합니다
         for (var j = 0; j < data.length; j++) {
             (function(j){
@@ -247,6 +247,10 @@
     function searchCity(event){
         event.preventDefault();
         var city = document.getElementById('city').value;
+        if(city.length < 2){
+            alert('2자 이상 입력하세요');
+            return false;
+        }
         geocoder.addressSearch(city, function(result, status) {
             var currentPosition = new kakao.maps.LatLng(result[0].y, result[0].x);
             map.setCenter(currentPosition);

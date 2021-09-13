@@ -5790,6 +5790,10 @@ table.dataTable.table-striped > tbody > tr.odd {
     word-break: keep-all;
 }
 
+.info-table{
+    font-size: 14px;
+}
+
 .info__table{
     font-size: 10px;
     margin-bottom: 5px;
@@ -5838,4 +5842,11 @@ table.dataTable.table-striped > tbody > tr.odd {
 
 .dataTables_info{
     display: none;
+}
+
+@media(max-width: 560px){
+    .info-table,
+    .pagination{
+        font-size: 12px;
+    }
 }
