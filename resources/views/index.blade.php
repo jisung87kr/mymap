@@ -11,11 +11,12 @@
 </div>
 <form class="row g-3 mb-3" action="" onsubmit="searchCity(event)">
     <div class="col-auto">
-        <input type="text" class="form-control" placeholder="춘천" name="city" id="city" value="춘천">
+        <input type="text" class="form-control" placeholder="춘천시" name="city" id="city" value="">
     </div>
     <div class="col-auto">
         <input type="submit" class="btn btn-primary">
     </div>
+    <small class="text-muted m-0">*도시명을 검색하세요</small>
 </form>
 <div class="table-responsive">
     <table class="info-table table table-bordered display responsive nowrap" style="width:100%">
@@ -115,6 +116,8 @@
 
             // 커스텀 오버레이를 지도에 표시합니다
             customOverlay.setMap(map);
+        }).catch(function(e){
+            console.log(e);
         });
     }
 
@@ -122,6 +125,10 @@
         return new Promise(function(resolve, reject) {
             navigator.geolocation.getCurrentPosition((position) => {
                 resolve(position.coords);
+            }, function(error){
+                if(error.code == 1){
+                    alert('사용자 위치를 찾을 수 없습니다.');
+                }
             });
         });
     }
@@ -333,6 +340,7 @@
         var marker = findMarker(markers, data['id']);
         kakao.maps.event.trigger(marker, 'openWindow');
         map.setLevel(mapOption.level);
+        $(window).scrollTop($(".map_wrap").offset().top - 200);
     } );
 
     $(".btnbox").on("click", 'a', function(event){
@@ -346,6 +354,8 @@
        }
        setMarkers(selected_markers, null);
        initDataTable(getSelectedItems(selected_markers));
+
+       $(this).addClass("btn-primary").removeClass("btn-secondary").siblings().addClass("btn-secondary").removeClass("btn-primary");
     });
 
     $(".btn-current-position").click(moveCurrentPosition);
