@@ -339,7 +339,7 @@
 
     $('.table tbody').on( 'click', 'button', function () {
         var data = dt.row( $(this).parents('tr') ).data();
-        var currentPosition = new kakao.maps.LatLng(data['위도'], data['경도']);
+        var currentPosition = new kakao.maps.LatLng(data['위도']-0.05, data['경도']);
         map.setCenter(currentPosition);
         var marker = findMarker(markers, data['id']);
         kakao.maps.event.trigger(marker, 'openWindow');
