@@ -252,9 +252,11 @@
             return false;
         }
         geocoder.addressSearch(city, function(result, status) {
-            var currentPosition = new kakao.maps.LatLng(result[0].y, result[0].x);
-            map.setCenter(currentPosition);
-            map.setLevel(mapOption.level);
+            if (status === kakao.maps.services.Status.OK) {
+                var currentPosition = new kakao.maps.LatLng(result[0].y, result[0].x);
+                map.setCenter(currentPosition);
+                map.setLevel(mapOption.level);
+            }
         });
 
         axios.get(requestUrl+city).then(function (response) {

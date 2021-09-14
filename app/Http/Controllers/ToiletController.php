@@ -21,7 +21,7 @@ class ToiletController extends Controller
         if(is_null($city)){
             $toilets = [];
         } else {
-            $toilets = $this->toilet::where('시', 'LIKE', "{$city}%")->get();
+            $toilets = $this->toilet::where('시', 'LIKE', "{$city}%")->orWhere('도', 'LIKE', "{$city}%")->get();
         }
 
         $data = [
