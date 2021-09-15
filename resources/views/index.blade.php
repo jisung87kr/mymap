@@ -68,7 +68,7 @@
     var mapContainer = document.getElementById('map'), // 지도를 표시할 div
         mapOption = {
             center: new kakao.maps.LatLng(37.87446532, 127.7038534334), // 지도의 중심좌표
-            level: 3 // 지도의 확대 레벨
+            level: 7 // 지도의 확대 레벨
         };
 
     var map = new kakao.maps.Map(mapContainer, mapOption); // 지도를 생성합니다
@@ -255,18 +255,30 @@
             return false;
         }
 
+        // 필터 초기화
+        for (const property in category) {
+            category[property] = [];
+        }
+
+        // 위치이동
         geocoder.addressSearch(city, function(result, status) {
             if (status === kakao.maps.services.Status.OK) {
                 var currentPosition = new kakao.maps.LatLng(result[0].y, result[0].x);
                 map.setCenter(currentPosition);
-                map.setLevel(mapOption.level);
+                // map.setLevel(mapOption.level);
             }
         });
 
+        // 로딩 시작 알림
         $(".loadingbox .alert").addClass("alert-primary animate__fadeIn").slideDown().text('데이터 조회중');
+
+        // 데이터 조회
         axios.get(requestUrl+city).then(function (response) {
             createMap(response.data.response);
             initDataTable(response.data.response);
+
+            // 로딩 완료 알림
+            $(".btnbox .btn").removeClass("btn-primary").addClass("btn-secondary");
             $(".loadingbox .alert").addClass("alert-success animate__fadeIn").text('데이터 조회성공');
             setTimeout(function(){
                 $(".loadingbox .alert").slideUp(function(){
