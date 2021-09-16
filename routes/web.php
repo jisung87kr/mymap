@@ -20,3 +20,6 @@ Route::get('/', function () {
 Route::get('/toilet/setting', [ToiletController::class, 'setting']);
 Route::get('/toilet/{city?}', [ToiletController::class, 'index']);
 Route::put('/toilet/{id}', [ToiletController::class, 'update']);
+Route::middleware(['auth:sanctum', 'verified'])->get('/dashboard', function () {
+    return view('dashboard');
+})->name('dashboard');
