@@ -7,7 +7,7 @@
 </div>
 <div class="map_wrap">
     <div id="map" class="mb-3" style="width:100%; height:400px;"></div>
-    <button class="btn-current-position"><i class="fa fa-location-arrow" aria-hidden="true"></i></button>
+    <button class="btn-current-position"><i class="fa fa-location-arrow p-2" aria-hidden="true"></i></button>
 </div>
 <form class="row g-3 mb-3" action="" onsubmit="searchCity(event)">
     <div class="col-auto">
