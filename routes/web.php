@@ -13,9 +13,9 @@ use App\Http\Controllers\ToiletController;
 |
 */
 
-//Route::get('/', function () {
-//    return view('welcome');
-//});
+Route::get('/', function () {
+    return view('welcome');
+});
 
 Route::get('/toilet/setting', [ToiletController::class, 'setting']);
 Route::get('/toilet/{city?}', [ToiletController::class, 'index']);
