@@ -16,7 +16,7 @@
     <div class="col-auto">
         <input type="submit" class="btn btn-primary">
     </div>
-    <small class="text-muted m-1">*도시명을 검색하세요</small>
+    <small class="text-muted m-1">* 도시명을 검색하세요</small>
 </form>
 <div class="loadingbox">
     <div class="alert animate__animated" style="display: none" role="alert">데이터 조회중</div>
